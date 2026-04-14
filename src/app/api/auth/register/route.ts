@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
     const colors = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ef4444", "#14b8a6"];
     const avatar_color = colors[Math.floor(Math.random() * colors.length)];
 
-    const result = await execute("INSERT INTO users (email, name, password_hash, avatar_color) VALUES (?, ?, ?, ?)", [email, name, password_hash, avatar_color]);
+    const result = await queryOne("INSERT INTO users (email, name, password_hash, avatar_color) VALUES (?, ?, ?, ?) RETURNING id", [email, name, password_hash, avatar_color]);
 
-    const userId = Number(result.lastInsertRowid);
+    const userId = Number(result.id);
     const token = signToken({ userId, email, name });
 
     const response = NextResponse.json({
