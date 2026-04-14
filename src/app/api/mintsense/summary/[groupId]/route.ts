@@ -1,0 +1,58 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthUser } from "../../../../../lib/auth";
+import Anthropic from "@anthropic-ai/sdk";
+import { computeGroupBalances, computeGroupStats } from "../../../../../lib/balance-engine";
+import { getDb } from "../../../../../lib/db";
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ groupId: string }> }) {
+  const auth = await getAuthUser(req);
+  if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { groupId } = await params;
+  const db = getDb();
+
+  const isMember = db
+    .prepare("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?")
+    .get(Number(groupId), auth.userId);
+  if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const group = db.prepare("SELECT name FROM groups WHERE id = ?").get(Number(groupId)) as { name: string };
+  const { settlements, netBalances } = computeGroupBalances(Number(groupId));
+  const { totalSpent, memberContributions } = computeGroupStats(Number(groupId));
+
+  const settlementsText = settlements.length === 0
+    ? "Everyone is settled up."
+    : settlements.map((s) => `${s.fromUserName} owes ${s.toUserName} ₹${s.amount}`).join(", ");
+
+  const contributionsText = memberContributions
+    .map((m) => `${m.name} paid ₹${m.paid}`)
+    .join(", ");
+
+  const prompt = `Generate a friendly, concise human-readable summary for the expense group "${group.name}".
+Total spent: ₹${totalSpent}
+Contributions: ${contributionsText}
+Settlements needed: ${settlementsText}
+Current user: ${auth.name}
+
+Write 2-3 sentences in a friendly tone. Mention the user by name. Use ₹ for amounts. Be specific.`;
+
+  try {
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-5",
+      max_tokens: 512,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const content = message.content[0];
+    const summary = content.type === "text" ? content.text : "Unable to generate summary.";
+
+    return NextResponse.json({ summary });
+  } catch (error) {
+    console.error("MintSense summary error:", error);
+    return NextResponse.json({ error: "Summary generation failed" }, { status: 500 });
+  }
+}
