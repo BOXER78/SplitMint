@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Sparkles, Loader, ChevronDown } from "lucide-react";
+import { X, Sparkles, Loader, ChevronDown, Mic } from "lucide-react";
 import { Avatar } from "./Avatar";
 import { toast } from "./Toast";
 
@@ -37,6 +37,7 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
   const [loading, setLoading] = useState(false);
   const [mintLoading, setMintLoading] = useState(false);
   const [mintText, setMintText] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
 
   const [form, setForm] = useState({
     groupId: defaultGroupId?.toString() || "",
@@ -158,6 +159,30 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
     }
   };
 
+  const toggleRecording = () => {
+    if (isRecording) return;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast("Voice recognition not supported in your browser.", "error");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsRecording(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setMintText((prev) => prev ? prev + ' ' + transcript : transcript);
+    };
+    recognition.onerror = (event: any) => {
+      if (event.error !== 'no-speech') toast("Microphone error: " + event.error, "error");
+      setIsRecording(false);
+    };
+    recognition.onend = () => setIsRecording(false);
+    recognition.start();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.groupId || !form.amount || !form.description || selectedParticipants.length === 0) {
@@ -254,16 +279,33 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
               <span style={{ fontSize: "12px", fontWeight: "600", color: "#818cf8" }}>MintSense AI</span>
             </div>
             <div style={{ display: "flex", gap: "8px" }}>
-              <input
-                type="text"
-                className="input-field"
-                value={mintText}
-                onChange={(e) => setMintText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleMintSense()}
-                placeholder={`e.g. "I paid ₹600 for dinner with Alice, split equally"`}
-                style={{ fontSize: "13px" }}
-                disabled={!form.groupId}
-              />
+              <div style={{ position: "relative", flex: 1 }}>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={mintText}
+                  onChange={(e) => setMintText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleMintSense()}
+                  placeholder={`e.g. "I paid ₹600 for dinner with Alice, split equally"`}
+                  style={{ fontSize: "13px", paddingRight: "40px", width: "100%" }}
+                  disabled={!form.groupId}
+                />
+                <button
+                  type="button"
+                  onClick={toggleRecording}
+                  disabled={!form.groupId || isRecording}
+                  style={{
+                    position: "absolute", right: "6px", top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer",
+                    color: isRecording ? "#ef4444" : "var(--text-muted)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: "6px"
+                  }}
+                  title="Speak expense"
+                >
+                  <Mic size={16} className={isRecording ? "animate-pulse" : ""} />
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={handleMintSense}

@@ -69,9 +69,6 @@ export function computeGroupBalances(groupId: number): {
       if (net[split.user_id] && net[split.user_id][payerId] !== undefined) {
         net[split.user_id][payerId] += split.amount;
       }
-      if (net[payerId] && net[payerId][split.user_id] !== undefined) {
-        net[payerId][split.user_id] -= split.amount;
-      }
     }
   }
 

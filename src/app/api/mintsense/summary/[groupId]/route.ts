@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "../../../../../lib/auth";
-import Anthropic from "@anthropic-ai/sdk";
 import { computeGroupBalances, computeGroupStats } from "../../../../../lib/balance-engine";
 import { getDb } from "../../../../../lib/db";
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ groupId: string }> }) {
   const auth = await getAuthUser(req);
@@ -41,14 +36,21 @@ Current user: ${auth.name}
 Write 2-3 sentences in a friendly tone. Mention the user by name. Use ₹ for amounts. Be specific.`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 512,
-      messages: [{ role: "user", content: prompt }],
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7
+      })
     });
-
-    const content = message.content[0];
-    const summary = content.type === "text" ? content.text : "Unable to generate summary.";
+    
+    const data = await res.json();
+    const summary = data.choices?.[0]?.message?.content || "Unable to generate summary.";
 
     return NextResponse.json({ summary });
   } catch (error) {

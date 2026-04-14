@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "../../../../lib/auth";
-import Anthropic from "@anthropic-ai/sdk";
 import { getDb } from "../../../../lib/db";
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
 
 export async function POST(req: NextRequest) {
   const auth = await getAuthUser(req);
@@ -46,6 +41,7 @@ Return ONLY valid JSON with this exact structure:
 
 Rules:
 - If payer not specified, assume current user
+- Handle Speech-to-Text typos gracefully (e.g., if you see "ipad" or "I pad 600", it almost always means "I paid 600").
 - If participants not specified for equal split, include all group members
 - Date defaults to today if not mentioned
 - For "split equally" → splitMode: "equal"
@@ -53,20 +49,32 @@ Rules:
 - For percentages → splitMode: "percentage"`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: [{ role: "user", content: text }],
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: text }
+        ],
+        temperature: 0,
+        response_format: { type: "json_object" }
+      })
     });
 
-    const content = message.content[0];
-    if (content.type !== "text") {
+    const data = await res.json();
+    const contentText = data.choices?.[0]?.message?.content;
+
+    if (!contentText) {
       return NextResponse.json({ error: "Invalid AI response" }, { status: 500 });
     }
 
     // Extract JSON from response
-    const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = contentText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return NextResponse.json({ error: "Could not parse AI response" }, { status: 500 });
     }
