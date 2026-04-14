@@ -1,13 +1,14 @@
 {
   "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/groups/route": "app/api/groups/route.js",
   "/api/expenses/route": "app/api/expenses/route.js",
   "/api/groups/[id]/balances/route": "app/api/groups/[id]/balances/route.js",
+  "/api/auth/logout/route": "app/api/auth/logout/route.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
   "/api/groups/[id]/route": "app/api/groups/[id]/route.js",
-  "/api/expenses/[id]/route": "app/api/expenses/[id]/route.js",
+  "/page": "app/page.js",
   "/login/page": "app/login/page.js",
   "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
-  "/(app)/groups/[id]/page": "app/(app)/groups/[id]/page.js",
-  "/(app)/groups/page": "app/(app)/groups/page.js"
+  "/(app)/groups/page": "app/(app)/groups/page.js",
+  "/(app)/expenses/page": "app/(app)/expenses/page.js"
 }
