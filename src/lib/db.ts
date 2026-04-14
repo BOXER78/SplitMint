@@ -1,4 +1,10 @@
-import { Pool } from 'pg';
+import { Pool, types } from 'pg';
+
+// Force numeric types to be parsed as numbers instead of strings
+// 20 = int8, 701 = float8, 1700 = numeric/decimal
+types.setTypeParser(20, val => parseInt(val, 10));
+types.setTypeParser(701, val => parseFloat(val));
+types.setTypeParser(1700, val => parseFloat(val));
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

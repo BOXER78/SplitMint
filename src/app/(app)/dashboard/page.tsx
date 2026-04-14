@@ -75,9 +75,9 @@ export default function DashboardPage() {
     if (user) load();
   }, [user, load]);
 
-  const totalOwed = groupBalances.reduce((s, g) => s + g.youOwe, 0);
-  const totalOwedToYou = groupBalances.reduce((s, g) => s + g.owedToYou, 0);
-  const totalSpent = groups.reduce((s: number, g: any) => s + (g.total_spent || 0), 0);
+  const totalOwed = groupBalances.reduce((s, g) => s + Number(g.youOwe || 0), 0);
+  const totalOwedToYou = groupBalances.reduce((s, g) => s + Number(g.owedToYou || 0), 0);
+  const totalSpent = groups.reduce((s: number, g: any) => s + Number(g.total_spent || 0), 0);
 
   const handleMintSense = async () => {
     if (groups.length === 0) return;
