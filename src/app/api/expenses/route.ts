@@ -14,14 +14,14 @@ export async function GET(req: NextRequest) {
   const dateTo = searchParams.get("dateTo");
   const amountMin = searchParams.get("amountMin");
   const amountMax = searchParams.get("amountMax");
+  
   // Verify user is in group if groupId provided
   if (groupId) {
-    const isMember = await query("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?")
-      .get(Number(groupId), auth.userId);
+    const isMember = await queryOne("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?", [Number(groupId), auth.userId]);
     if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let query = `
+  let sqlQuery = `
     SELECT e.*, 
       u.name as paid_by_name, u.avatar_color as paid_by_color,
       g.name as group_name
@@ -34,45 +34,45 @@ export async function GET(req: NextRequest) {
   const queryParams: (string | number)[] = [auth.userId];
 
   if (groupId) {
-    query += ` AND e.group_id = ?`;
+    sqlQuery += ` AND e.group_id = ?`;
     queryParams.push(Number(groupId));
   }
   if (search) {
-    query += ` AND e.description LIKE ?`;
+    sqlQuery += ` AND e.description LIKE ?`;
     queryParams.push(`%${search}%`);
   }
   if (participantId) {
-    query += ` AND EXISTS (SELECT 1 FROM expense_splits es WHERE es.expense_id = e.id AND es.user_id = ?)`;
+    sqlQuery += ` AND EXISTS (SELECT 1 FROM expense_splits es WHERE es.expense_id = e.id AND es.user_id = ?)`;
     queryParams.push(Number(participantId));
   }
   if (dateFrom) {
-    query += ` AND e.date >= ?`;
+    sqlQuery += ` AND e.date >= ?`;
     queryParams.push(dateFrom);
   }
   if (dateTo) {
-    query += ` AND e.date <= ?`;
+    sqlQuery += ` AND e.date <= ?`;
     queryParams.push(dateTo);
   }
   if (amountMin) {
-    query += ` AND e.amount >= ?`;
+    sqlQuery += ` AND e.amount >= ?`;
     queryParams.push(Number(amountMin));
   }
   if (amountMax) {
-    query += ` AND e.amount <= ?`;
+    sqlQuery += ` AND e.amount <= ?`;
     queryParams.push(Number(amountMax));
   }
 
-  query += ` GROUP BY e.id ORDER BY e.date DESC, e.created_at DESC`;
+  sqlQuery += ` GROUP BY e.id ORDER BY e.date DESC, e.created_at DESC`;
 
-  const expenses = await queryOne(query, [...queryParams]);
+  const expenses = await query(sqlQuery, queryParams);
 
   // Attach splits
-  const expensesWithSplits = (expenses as any[]).map((exp) => {
+  const expensesWithSplits = await Promise.all((expenses as any[]).map(async (exp) => {
     const splits = await query(`SELECT es.*, u.name as user_name, u.avatar_color
          FROM expense_splits es JOIN users u ON es.user_id = u.id
          WHERE es.expense_id = ?`, [exp.id]);
     return { ...exp, splits };
-  });
+  }));
 
   return NextResponse.json({ expenses: expensesWithSplits });
 }
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
   if (!groupId || !amount || !description || !date || !paidByUserId || !splitMode) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
-  const isMember = await execute("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?", [Number(groupId)], auth.userId);
+  const isMember = await queryOne("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?", [Number(groupId), auth.userId]);
   if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   // Validate splits total
@@ -95,18 +95,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Split amounts must sum to total" }, { status: 400 });
   }
 
-  const result = db.transaction(() => {
-    const r = await queryOne("INSERT INTO expenses (group_id, amount, description, date, paid_by_user_id, split_mode) VALUES (?, ?, ?, ?, ?, ?)", [Number(groupId)], Number(amount), description, date, Number(paidByUserId), splitMode);
+  const r = await queryOne("INSERT INTO expenses (group_id, amount, description, date, paid_by_user_id, split_mode) VALUES (?, ?, ?, ?, ?, ?) RETURNING id", [Number(groupId), Number(amount), description, date, Number(paidByUserId), splitMode]);
+  
+  if (!r) return NextResponse.json({ error: "Failed to insert expense" }, { status: 500 });
+  const expenseId = Number(r.id);
 
-    const expenseId = Number(r.lastInsertRowid);
+  for (const split of splits) {
+    await execute("INSERT INTO expense_splits (expense_id, user_id, amount, percentage) VALUES (?, ?, ?, ?)", [expenseId, Number(split.userId), Number(split.amount), split.percentage ?? null]);
+  }
 
-    for (const split of splits) {
-      await execute("INSERT INTO expense_splits (expense_id, user_id, amount, percentage) VALUES (?, ?, ?, ?)", [expenseId, Number(split.userId)], Number(split.amount), split.percentage ?? null);
-    }
-
-    return expenseId;
-  })();
-
-  const expense = db.prepare("SELECT * FROM expenses WHERE id = ?", [result]);
+  const expense = await queryOne("SELECT * FROM expenses WHERE id = ?", [expenseId]);
   return NextResponse.json({ expense }, { status: 201 });
 }
