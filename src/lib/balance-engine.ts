@@ -22,11 +22,11 @@ export interface Settlement {
   amount: number;
 }
 
-export async function computeGroupBalances(groupId: number): {
+export async function computeGroupBalances(groupId: number): Promise<{
   balances: Balance[];
   settlements: Settlement[];
   netBalances: NetBalance[];
-} {
+}> {
   // Get all members
   const members = await query(`SELECT u.id, u.name FROM users u
        JOIN group_members gm ON u.id = gm.user_id
@@ -161,12 +161,13 @@ function simplifyDebts(
   return settlements;
 }
 
-export async function computeGroupStats(groupId: number) {
-  const result = await query(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE group_id = ?`)
-    .get(groupId) as { total: number };
+export async function computeGroupStats(groupId: number): Promise<{
+  totalSpent: number;
+  memberContributions: { id: number; name: string; avatar_color: string; paid: number }[];
+}> {
+  const result = await queryOne(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE group_id = ?`, [groupId]) as { total: number };
 
-  const memberContributions = db
-    .prepare(
+  const memberContributions = await query(
       `SELECT u.id, u.name, u.avatar_color,
         COALESCE(SUM(e.amount), 0) as paid
        FROM users u
