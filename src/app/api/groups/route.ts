@@ -32,18 +32,13 @@ export async function POST(req: NextRequest) {
   if (allMemberIds.length > 4) {
     return NextResponse.json({ error: "Max 4 members per group" }, { status: 400 });
   }
-  const insertGroup = await queryOne("INSERT INTO groups (name, created_by) VALUES (?, ?)");
-  const insertMember = db.prepare("INSERT OR IGNORE INTO group_members (group_id, user_id) VALUES (?, ?)");
+  const result = await queryOne("INSERT INTO groups (name, created_by) VALUES (?, ?) RETURNING id", [name.trim(), auth.userId]);
+  const groupId = result.id;
 
-  const result = db.transaction(() => {
-    const r = insertGroup.run(name.trim(), auth.userId);
-    const groupId = Number(r.lastInsertRowid);
-    for (const uid of allMemberIds) {
-      insertMember.run(groupId, uid);
-    }
-    return groupId;
-  })();
+  for (const uid of allMemberIds) {
+    await execute("INSERT INTO group_members (group_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING", [groupId, uid]);
+  }
 
-  const group = db.prepare("SELECT * FROM groups WHERE id = ?", [result]);
+  const group = await queryOne("SELECT * FROM groups WHERE id = ?", [groupId]);
   return NextResponse.json({ group }, { status: 201 });
 }
