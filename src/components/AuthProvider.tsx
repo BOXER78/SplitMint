@@ -51,7 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
-    if (!res.ok) return data.error || "Login failed";
+    if (!res.ok) {
+      if (data.details) return `${data.error} (${data.details})`;
+      return data.error || "Login failed";
+    }
     setUser(data.user);
     return null;
   };
@@ -63,7 +66,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ email, name, password }),
     });
     const data = await res.json();
-    if (!res.ok) return data.error || "Registration failed";
+    if (!res.ok) {
+      if (data.details) return `${data.error} (${data.details})`;
+      return data.error || "Registration failed";
+    }
     setUser(data.user);
     return null;
   };
