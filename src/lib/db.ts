@@ -2,7 +2,8 @@ import { Pool } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
+  connectionTimeoutMillis: 5000, // Stop waiting after 5 seconds
 });
 
 export async function query(text: string, params: any[] = []) {
