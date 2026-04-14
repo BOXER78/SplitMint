@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     queryParams.push(Number(amountMax));
   }
 
-  sqlQuery += ` GROUP BY e.id ORDER BY e.date DESC, e.created_at DESC`;
+  sqlQuery += ` GROUP BY e.id, u.name, u.avatar_color, g.name ORDER BY e.date DESC, e.created_at DESC`;
 
   const expenses = await query(sqlQuery, queryParams);
 

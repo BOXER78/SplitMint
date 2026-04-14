@@ -6,8 +6,8 @@ export async function GET(req: NextRequest) {
   const auth = await getAuthUser(req);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const groups = await query(`SELECT g.*, 
-        (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) as member_count,
-        (SELECT COALESCE(SUM(amount),0) FROM expenses WHERE group_id = g.id) as total_spent
+        CAST((SELECT COUNT(*) FROM group_members WHERE group_id = g.id) AS INTEGER) as member_count,
+        CAST((SELECT COALESCE(SUM(amount),0) FROM expenses WHERE group_id = g.id) AS DECIMAL) as total_spent
        FROM groups g
        JOIN group_members gm ON g.id = gm.group_id
        WHERE gm.user_id = ?
