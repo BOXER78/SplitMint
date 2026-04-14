@@ -1,14 +1,12 @@
 {
-  "/api/groups/[id]/route": "app/api/groups/[id]/route.js",
-  "/api/expenses/route": "app/api/expenses/route.js",
-  "/api/groups/[id]/balances/route": "app/api/groups/[id]/balances/route.js",
   "/api/auth/me/route": "app/api/auth/me/route.js",
   "/api/groups/route": "app/api/groups/route.js",
+  "/api/expenses/route": "app/api/expenses/route.js",
+  "/api/groups/[id]/balances/route": "app/api/groups/[id]/balances/route.js",
+  "/api/groups/[id]/route": "app/api/groups/[id]/route.js",
   "/api/mintsense/parse/route": "app/api/mintsense/parse/route.js",
-  "/api/expenses/[id]/route": "app/api/expenses/[id]/route.js",
-  "/api/mintsense/summary/[groupId]/route": "app/api/mintsense/summary/[groupId]/route.js",
-  "/(app)/groups/[id]/page": "app/(app)/groups/[id]/page.js",
+  "/page": "app/page.js",
   "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
-  "/(app)/expenses/page": "app/(app)/expenses/page.js",
-  "/(app)/groups/page": "app/(app)/groups/page.js"
+  "/(app)/groups/page": "app/(app)/groups/page.js",
+  "/(app)/expenses/page": "app/(app)/expenses/page.js"
 }
