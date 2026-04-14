@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { query, queryOne, execute } from "@/lib/db";
 import { getAuthUser } from "../../../../lib/auth";
 
-async function await isMember(db: ReturnType<typeof getDb>, groupId: number, userId: number) {
+async function isMember(db: ReturnType<typeof getDb>, groupId: number, userId: number) {
   return await query("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?").get(groupId, userId);
 }
 
@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   db.transaction(() => {
-    await queryOne("UPDATE groups SET name = ? WHERE id = ?", [name.trim(]), groupId);
+    await queryOne("UPDATE groups SET name = ? WHERE id = ?", [name.trim()], groupId);
     await execute("DELETE FROM group_members WHERE group_id = ?", [groupId]);
     for (const uid of allMemberIds) {
       await execute("INSERT OR IGNORE INTO group_members (group_id, user_id) VALUES (?, ?)", [groupId, uid]);

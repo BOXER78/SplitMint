@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
   if (!groupId || !amount || !description || !date || !paidByUserId || !splitMode) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
-  const isMember = await execute("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?", [Number(groupId]), auth.userId);
+  const isMember = await execute("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?", [Number(groupId)], auth.userId);
   if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   // Validate splits total
@@ -96,12 +96,12 @@ export async function POST(req: NextRequest) {
   }
 
   const result = db.transaction(() => {
-    const r = await queryOne("INSERT INTO expenses (group_id, amount, description, date, paid_by_user_id, split_mode) VALUES (?, ?, ?, ?, ?, ?)", [Number(groupId]), Number(amount), description, date, Number(paidByUserId), splitMode);
+    const r = await queryOne("INSERT INTO expenses (group_id, amount, description, date, paid_by_user_id, split_mode) VALUES (?, ?, ?, ?, ?, ?)", [Number(groupId)], Number(amount), description, date, Number(paidByUserId), splitMode);
 
     const expenseId = Number(r.lastInsertRowid);
 
     for (const split of splits) {
-      await execute("INSERT INTO expense_splits (expense_id, user_id, amount, percentage) VALUES (?, ?, ?, ?)", [expenseId, Number(split.userId]), Number(split.amount), split.percentage ?? null);
+      await execute("INSERT INTO expense_splits (expense_id, user_id, amount, percentage) VALUES (?, ?, ?, ?)", [expenseId, Number(split.userId)], Number(split.amount), split.percentage ?? null);
     }
 
     return expenseId;

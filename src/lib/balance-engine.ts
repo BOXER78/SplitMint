@@ -22,7 +22,7 @@ export interface Settlement {
   amount: number;
 }
 
-export async function await computeGroupBalances(groupId: number): {
+export async function computeGroupBalances(groupId: number): {
   balances: Balance[];
   settlements: Settlement[];
   netBalances: NetBalance[];
@@ -161,7 +161,7 @@ function simplifyDebts(
   return settlements;
 }
 
-export async function await computeGroupStats(groupId: number) {
+export async function computeGroupStats(groupId: number) {
   const result = await query(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE group_id = ?`)
     .get(groupId) as { total: number };
 

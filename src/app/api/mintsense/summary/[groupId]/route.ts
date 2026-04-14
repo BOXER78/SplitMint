@@ -8,10 +8,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ grou
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { groupId } = await params;
-  const isMember = await queryOne("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?", [Number(groupId]), auth.userId);
+  const isMember = await queryOne("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?", [Number(groupId)], auth.userId);
   if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const group = await queryOne("SELECT name FROM groups WHERE id = ?", [Number(groupId])) as { name: string };
+  const group = await queryOne("SELECT name FROM groups WHERE id = ?", [Number(groupId)]) as { name: string };
   const { settlements, netBalances } = await computeGroupBalances(Number(groupId));
   const { totalSpent, memberContributions } = await computeGroupStats(Number(groupId));
 
