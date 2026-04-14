@@ -1,1 +1,0 @@
-globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/groups/[id]/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"/Users/kartikk/Desktop/SplitMint/SplitMint/src/app/api/groups/[id]/route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};

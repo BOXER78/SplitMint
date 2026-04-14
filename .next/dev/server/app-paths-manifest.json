@@ -1,12 +1,8 @@
 {
   "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/groups/route": "app/api/groups/route.js",
-  "/api/expenses/route": "app/api/expenses/route.js",
-  "/api/groups/[id]/balances/route": "app/api/groups/[id]/balances/route.js",
-  "/api/groups/[id]/route": "app/api/groups/[id]/route.js",
-  "/api/mintsense/parse/route": "app/api/mintsense/parse/route.js",
+  "/api/auth/register/route": "app/api/auth/register/route.js",
+  "/register/page": "app/register/page.js",
   "/page": "app/page.js",
-  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
-  "/(app)/groups/page": "app/(app)/groups/page.js",
-  "/(app)/expenses/page": "app/(app)/expenses/page.js"
+  "/login/page": "app/login/page.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js"
 }

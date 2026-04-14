@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "../../../lib/db";
+import { query, queryOne, execute } from "@/lib/db";
 import { getAuthUser } from "../../../lib/auth";
 
 export async function GET(req: NextRequest) {
@@ -14,13 +14,9 @@ export async function GET(req: NextRequest) {
   const dateTo = searchParams.get("dateTo");
   const amountMin = searchParams.get("amountMin");
   const amountMax = searchParams.get("amountMax");
-
-  const db = getDb();
-
   // Verify user is in group if groupId provided
   if (groupId) {
-    const isMember = db
-      .prepare("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?")
+    const isMember = await query("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?")
       .get(Number(groupId), auth.userId);
     if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -68,17 +64,13 @@ export async function GET(req: NextRequest) {
 
   query += ` GROUP BY e.id ORDER BY e.date DESC, e.created_at DESC`;
 
-  const expenses = db.prepare(query).all(...queryParams);
+  const expenses = await queryOne(query, [...queryParams]);
 
   // Attach splits
   const expensesWithSplits = (expenses as any[]).map((exp) => {
-    const splits = db
-      .prepare(
-        `SELECT es.*, u.name as user_name, u.avatar_color
+    const splits = await query(`SELECT es.*, u.name as user_name, u.avatar_color
          FROM expense_splits es JOIN users u ON es.user_id = u.id
-         WHERE es.expense_id = ?`
-      )
-      .all(exp.id);
+         WHERE es.expense_id = ?`, [exp.id]);
     return { ...exp, splits };
   });
 
@@ -94,12 +86,7 @@ export async function POST(req: NextRequest) {
   if (!groupId || !amount || !description || !date || !paidByUserId || !splitMode) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
-
-  const db = getDb();
-
-  const isMember = db
-    .prepare("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?")
-    .get(Number(groupId), auth.userId);
+  const isMember = await execute("SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?", [Number(groupId]), auth.userId);
   if (!isMember) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   // Validate splits total
@@ -109,23 +96,17 @@ export async function POST(req: NextRequest) {
   }
 
   const result = db.transaction(() => {
-    const r = db
-      .prepare(
-        "INSERT INTO expenses (group_id, amount, description, date, paid_by_user_id, split_mode) VALUES (?, ?, ?, ?, ?, ?)"
-      )
-      .run(Number(groupId), Number(amount), description, date, Number(paidByUserId), splitMode);
+    const r = await queryOne("INSERT INTO expenses (group_id, amount, description, date, paid_by_user_id, split_mode) VALUES (?, ?, ?, ?, ?, ?)", [Number(groupId]), Number(amount), description, date, Number(paidByUserId), splitMode);
 
     const expenseId = Number(r.lastInsertRowid);
 
     for (const split of splits) {
-      db.prepare(
-        "INSERT INTO expense_splits (expense_id, user_id, amount, percentage) VALUES (?, ?, ?, ?)"
-      ).run(expenseId, Number(split.userId), Number(split.amount), split.percentage ?? null);
+      await execute("INSERT INTO expense_splits (expense_id, user_id, amount, percentage) VALUES (?, ?, ?, ?)", [expenseId, Number(split.userId]), Number(split.amount), split.percentage ?? null);
     }
 
     return expenseId;
   })();
 
-  const expense = db.prepare("SELECT * FROM expenses WHERE id = ?").get(result);
+  const expense = db.prepare("SELECT * FROM expenses WHERE id = ?", [result]);
   return NextResponse.json({ expense }, { status: 201 });
 }

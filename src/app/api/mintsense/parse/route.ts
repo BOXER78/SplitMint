@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "../../../../lib/auth";
-import { getDb } from "../../../../lib/db";
+import { query, queryOne, execute } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   const auth = await getAuthUser(req);
@@ -8,15 +8,9 @@ export async function POST(req: NextRequest) {
 
   const { text, groupId } = await req.json();
   if (!text) return NextResponse.json({ error: "Text required" }, { status: 400 });
-
-  const db = getDb();
-  const members = db
-    .prepare(
-      `SELECT u.id, u.name FROM users u
+  const members = await query(`SELECT u.id, u.name FROM users u
        JOIN group_members gm ON u.id = gm.user_id
-       WHERE gm.group_id = ?`
-    )
-    .all(Number(groupId)) as { id: number; name: string }[];
+       WHERE gm.group_id = ?`, [Number(groupId])) as { id: number; name: string }[];
 
   const today = new Date().toISOString().split("T")[0];
   const membersList = members.map((m) => `${m.name} (id: ${m.id})`).join(", ");

@@ -1,4 +1,4 @@
-import { getDb } from "./db";
+import { query, queryOne, execute } from "@/lib/db";
 
 export interface Balance {
   fromUserId: number;
@@ -22,26 +22,18 @@ export interface Settlement {
   amount: number;
 }
 
-export function computeGroupBalances(groupId: number): {
+export async function await computeGroupBalances(groupId: number): {
   balances: Balance[];
   settlements: Settlement[];
   netBalances: NetBalance[];
 } {
-  const db = getDb();
-
   // Get all members
-  const members = db
-    .prepare(
-      `SELECT u.id, u.name FROM users u
+  const members = await query(`SELECT u.id, u.name FROM users u
        JOIN group_members gm ON u.id = gm.user_id
-       WHERE gm.group_id = ?`
-    )
-    .all(groupId) as { id: number; name: string }[];
+       WHERE gm.group_id = ?`, [groupId]) as { id: number; name: string }[];
 
   // Get all expenses for this group
-  const expenses = db
-    .prepare(`SELECT * FROM expenses WHERE group_id = ?`)
-    .all(groupId) as {
+  const expenses = await query(`SELECT * FROM expenses WHERE group_id = ?`, [groupId]) as {
     id: number;
     amount: number;
     paid_by_user_id: number;
@@ -57,9 +49,7 @@ export function computeGroupBalances(groupId: number): {
   }
 
   for (const expense of expenses) {
-    const splits = db
-      .prepare(`SELECT * FROM expense_splits WHERE expense_id = ?`)
-      .all(expense.id) as { user_id: number; amount: number }[];
+    const splits = await query(`SELECT * FROM expense_splits WHERE expense_id = ?`, [expense.id]) as { user_id: number; amount: number }[];
 
     const payerId = expense.paid_by_user_id;
 
@@ -171,10 +161,8 @@ function simplifyDebts(
   return settlements;
 }
 
-export function computeGroupStats(groupId: number) {
-  const db = getDb();
-  const result = db
-    .prepare(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE group_id = ?`)
+export async function await computeGroupStats(groupId: number) {
+  const result = await query(`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE group_id = ?`)
     .get(groupId) as { total: number };
 
   const memberContributions = db
@@ -185,9 +173,7 @@ export function computeGroupStats(groupId: number) {
        JOIN group_members gm ON u.id = gm.user_id
        LEFT JOIN expenses e ON e.paid_by_user_id = u.id AND e.group_id = ?
        WHERE gm.group_id = ?
-       GROUP BY u.id`
-    )
-    .all(groupId, groupId) as {
+       GROUP BY u.id`, [groupId, groupId]) as {
     id: number;
     name: string;
     avatar_color: string;
