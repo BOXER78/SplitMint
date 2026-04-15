@@ -2,7 +2,9 @@
 
 **SplitMint** is a premium, AI-powered expense splitting web application designed with elegance and clarity in mind. Built with a modern **Minty Fresh UI**, it allows users to create accounts, manage shared expenses online, track balances, and gain intelligent financial insights from anywhere.
 
-![SplitMint Preview](https://via.placeholder.com/800x400?text=SplitMint+Expense+Management) <!-- I'll use a placeholder for now as I can't generate a real screenshot of the running app yet, but the description will be vivid -->
+[**🔗 Visit Live Website**](https://splitmint.vercel.app)
+
+![SplitMint Dashboard](./dashboard.png)
 
 ## ✨ Features
 
