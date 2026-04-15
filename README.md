@@ -1,11 +1,12 @@
 # 🍃 SplitMint
 
-**SplitMint** is a premium, AI-powered expense splitting application designed with elegance and clarity in mind. Built with a modern **Minty Fresh UI**, it helps groups manage shared expenses, track balances, and gain intelligent financial insights effortlessly.
+**SplitMint** is a premium, AI-powered expense splitting web application designed with elegance and clarity in mind. Built with a modern **Minty Fresh UI**, it allows users to create accounts, manage shared expenses online, track balances, and gain intelligent financial insights from anywhere.
 
 ![SplitMint Preview](https://via.placeholder.com/800x400?text=SplitMint+Expense+Management) <!-- I'll use a placeholder for now as I can't generate a real screenshot of the running app yet, but the description will be vivid -->
 
 ## ✨ Features
 
+- **🚀 User Accounts**: Create your personal account to sync your expenses and groups across devices.
 - **🏠 Group Management**: Create and manage multiple groups for trips, roommates, or events.
 - **💸 Smart Expense Splitting**: Add expenses and let the engine calculate who owes whom.
 * **📊 Visual Dashboards**: Interactive charts and graphs powered by Recharts to visualize spending patterns.
