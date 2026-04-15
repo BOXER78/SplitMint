@@ -22,9 +22,28 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "hsl(var(--background))" }}>
       <Sidebar />
-      <main style={{ flex: 1, overflow: "auto" }}>
+      <main 
+        style={{ 
+          flex: 1, 
+          overflow: "auto", 
+          position: "relative",
+          zIndex: 1
+        }}
+      >
+        {/* Subtle background glow for the main area */}
+        <div style={{ 
+          position: "absolute", 
+          top: "0", 
+          right: "0", 
+          width: "400px", 
+          height: "400px", 
+          background: "radial-gradient(circle, hsl(168 80% 55% / 0.03), transparent 70%)",
+          pointerEvents: "none",
+          zIndex: -1
+        }} />
+        
         {children}
       </main>
       <ToastContainer />

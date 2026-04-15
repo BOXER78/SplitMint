@@ -60,19 +60,20 @@ export function UserSearch({ selected, onAdd, onRemove, maxUsers = 3, excludeIds
           {selected.map((u) => (
             <div
               key={u.id}
+              className="animate-scale-in"
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "6px",
-                padding: "5px 10px 5px 6px",
-                background: "rgba(74, 222, 128, 0.08)",
-                border: "1px solid rgba(74, 222, 128, 0.2)",
-                borderRadius: "20px",
+                gap: "8px",
+                padding: "6px 12px 6px 6px",
+                background: "hsl(var(--primary) / 0.1)",
+                border: "1px solid hsl(var(--primary) / 0.3)",
+                borderRadius: "12px",
                 fontSize: "13px",
               }}
             >
               <Avatar name={u.name} color={u.avatar_color} size="sm" />
-              <span style={{ color: "var(--text-primary)" }}>{u.name}</span>
+              <span style={{ color: "hsl(var(--foreground))", fontWeight: "600" }}>{u.name}</span>
               <button
                 type="button"
                 onClick={() => onRemove(u.id)}
@@ -80,13 +81,17 @@ export function UserSearch({ selected, onAdd, onRemove, maxUsers = 3, excludeIds
                   background: "none",
                   border: "none",
                   cursor: "pointer",
-                  color: "var(--text-muted)",
+                  color: "hsl(var(--muted-foreground))",
                   display: "flex",
                   alignItems: "center",
-                  padding: "0 2px",
+                  padding: "2px",
+                  borderRadius: "4px",
+                  transition: "color 0.2s"
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "hsl(var(--foreground))"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "hsl(var(--muted-foreground))"}
               >
-                <X size={12} />
+                <X size={14} />
               </button>
             </div>
           ))}
@@ -100,10 +105,10 @@ export function UserSearch({ selected, onAdd, onRemove, maxUsers = 3, excludeIds
               size={14}
               style={{
                 position: "absolute",
-                left: "12px",
+                left: "14px",
                 top: "50%",
                 transform: "translateY(-50%)",
-                color: "var(--text-muted)",
+                color: "hsl(var(--muted-foreground))",
               }}
             />
             <input
@@ -111,27 +116,30 @@ export function UserSearch({ selected, onAdd, onRemove, maxUsers = 3, excludeIds
               className="input-field"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name or email..."
-              style={{ paddingLeft: "34px" }}
+              placeholder="Type name or email to add..."
+              style={{ paddingLeft: "38px", height: "42px" }}
             />
           </div>
 
-          {loading && <Loading size="sm" />}
+          {loading && (
+            <div style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)" }}>
+              <Loading size="sm" />
+            </div>
+          )}
 
           {results.length > 0 && (
             <div
+              className="glass-card animate-slide-up"
               style={{
                 position: "absolute",
-                top: "calc(100% + 4px)",
+                top: "calc(100% + 8px)",
                 left: 0,
                 right: 0,
-                background: "#151b2e",
-                border: "1px solid var(--border)",
-                borderRadius: "10px",
-                overflow: "hidden",
-                zIndex: 10,
-                maxHeight: "200px",
+                zIndex: 50,
+                maxHeight: "260px",
                 overflowY: "auto",
+                boxShadow: "0 10px 40px -10px rgba(0,0,0,0.5)",
+                padding: "4px"
               }}
             >
               {results.map((u) => (
@@ -147,21 +155,28 @@ export function UserSearch({ selected, onAdd, onRemove, maxUsers = 3, excludeIds
                     width: "100%",
                     display: "flex",
                     alignItems: "center",
-                    gap: "10px",
+                    gap: "12px",
                     padding: "10px 14px",
                     background: "none",
                     border: "none",
                     cursor: "pointer",
                     textAlign: "left",
-                    transition: "background 0.1s",
+                    borderRadius: "8px",
+                    transition: "all 0.2s"
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "hsl(var(--primary) / 0.1)";
+                    e.currentTarget.style.transform = "translateX(4px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "none";
+                    e.currentTarget.style.transform = "translateX(0)";
+                  }}
                 >
                   <Avatar name={u.name} color={u.avatar_color} size="sm" />
-                  <div>
-                    <div style={{ fontSize: "13px", color: "var(--text-primary)", fontWeight: 500 }}>{u.name}</div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{u.email}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: "14px", color: "hsl(var(--foreground))", fontWeight: 600 }}>{u.name}</div>
+                    <div style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>{u.email}</div>
                   </div>
                 </button>
               ))}
@@ -170,22 +185,28 @@ export function UserSearch({ selected, onAdd, onRemove, maxUsers = 3, excludeIds
 
           {query.length >= 2 && !loading && results.length === 0 && (
             <div
+              className="glass-card"
               style={{
-                marginTop: "6px",
-                fontSize: "12px",
-                color: "var(--text-muted)",
-                paddingLeft: "4px",
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                left: 0,
+                right: 0,
+                padding: "16px",
+                fontSize: "13px",
+                color: "hsl(var(--muted-foreground))",
+                textAlign: "center",
+                zIndex: 10
               }}
             >
-              No users found
+              No users found for "{query}"
             </div>
           )}
         </div>
       )}
 
       {!canAdd && (
-        <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-          Maximum {maxUsers} members added (max group size: {maxUsers + 1} including you)
+        <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", marginTop: "8px", background: "hsl(var(--secondary) / 0.5)", padding: "8px 12px", borderRadius: "10px", border: "1px dashed hsl(var(--border))" }}>
+          Maximum {maxUsers} other members reached.
         </p>
       )}
     </div>

@@ -66,7 +66,6 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
     });
   }, [form.groupId]);
 
-  // Load edit data
   useEffect(() => {
     if (!editExpenseId) return;
     fetch(`/api/expenses/${editExpenseId}`).then((r) => r.json()).then((d) => {
@@ -192,7 +191,6 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
 
     const splits = computeSplits();
 
-    // Validate
     if (form.splitMode === "percentage") {
       const totalPct = Object.values(percentSplits).reduce((s, v) => s + parseFloat(v || "0"), 0);
       if (Math.abs(totalPct - 100) > 0.5) {
@@ -251,34 +249,36 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
   );
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-content" style={{ maxWidth: "580px" }}>
+    <div className="modal-overlay animate-fade-in" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal-content animate-scale-in" style={{ maxWidth: "580px", background: "hsl(var(--card))", overflowY: "auto" }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "700" }}>
+          <h2 style={{ fontSize: "20px", fontWeight: "700", color: "hsl(var(--foreground))" }}>
             {editExpenseId ? "Edit Expense" : "Add Expense"}
           </h2>
-          <button onClick={onClose} className="btn-secondary" style={{ padding: "6px", borderRadius: "8px" }}>
-            <X size={16} />
+          <button onClick={onClose} className="btn-secondary" style={{ padding: "6px", borderRadius: "8px", border: "none", background: "transparent" }}>
+            <X size={20} style={{ color: "hsl(var(--muted-foreground))" }} />
           </button>
         </div>
 
         {/* MintSense */}
         {!editExpenseId && (
           <div
+            className="animate-pulse-glow"
             style={{
-              marginBottom: "20px",
-              padding: "14px",
-              borderRadius: "12px",
-              background: "linear-gradient(135deg, rgba(129,140,248,0.08), rgba(74,222,128,0.08))",
-              border: "1px solid rgba(129,140,248,0.2)",
+              marginBottom: "24px",
+              padding: "16px",
+              borderRadius: "14px",
+              background: "linear-gradient(135deg, hsl(168 80% 55% / 0.1), hsl(217 91% 60% / 0.1))",
+              border: "1px solid hsl(168 80% 55% / 0.2)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
-              <Sparkles size={14} color="#818cf8" />
-              <span style={{ fontSize: "12px", fontWeight: "600", color: "#818cf8" }}>MintSense AI</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+              <Sparkles size={16} style={{ color: "hsl(168 80% 55%)" }} />
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "hsl(168 80% 55%)" }}>MintSense AI</span>
+              <span style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginLeft: "auto" }}>Try: "I paid ₹500 for coffee"</span>
             </div>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{ display: "flex", gap: "10px" }}>
               <div style={{ position: "relative", flex: 1 }}>
                 <input
                   type="text"
@@ -286,8 +286,8 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
                   value={mintText}
                   onChange={(e) => setMintText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleMintSense()}
-                  placeholder={`e.g. "I paid ₹600 for dinner with Alice, split equally"`}
-                  style={{ fontSize: "13px", paddingRight: "40px", width: "100%" }}
+                  placeholder={isRecording ? "Listening..." : "Tell AI what happened..."}
+                  style={{ fontSize: "13px", paddingRight: "44px", height: "42px" }}
                   disabled={!form.groupId}
                 />
                 <button
@@ -295,15 +295,16 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
                   onClick={toggleRecording}
                   disabled={!form.groupId || isRecording}
                   style={{
-                    position: "absolute", right: "6px", top: "50%", transform: "translateY(-50%)",
+                    position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)",
                     background: "none", border: "none", cursor: "pointer",
-                    color: isRecording ? "#ef4444" : "var(--text-muted)",
+                    color: isRecording ? "hsl(0 72% 60%)" : "hsl(var(--muted-foreground))",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    padding: "6px"
+                    padding: "8px", borderRadius: "50%", transition: "all 0.2s"
                   }}
-                  title="Speak expense"
+                  onMouseEnter={(e) => e.currentTarget.style.color = "hsl(168 80% 55%)"}
+                  onMouseLeave={(e) => e.currentTarget.style.color = isRecording ? "hsl(0 72% 60%)" : "hsl(var(--muted-foreground))"}
                 >
-                  <Mic size={16} className={isRecording ? "animate-pulse" : ""} />
+                  <Mic size={18} className={isRecording ? "animate-pulse" : ""} />
                 </button>
               </div>
               <button
@@ -311,41 +312,41 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
                 onClick={handleMintSense}
                 disabled={!mintText.trim() || !form.groupId || mintLoading}
                 className="btn-primary"
-                style={{ whiteSpace: "nowrap", padding: "8px 14px", fontSize: "13px" }}
+                style={{ whiteSpace: "nowrap", padding: "0 16px", height: "42px", fontSize: "13px" }}
               >
-                {mintLoading ? <Loader size={14} style={{ animation: "spin 0.7s linear infinite" }} /> : "Parse"}
+                {mintLoading ? <Loader size={16} className="spinner" /> : "Fill Form"}
               </button>
             </div>
             {!form.groupId && (
-              <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "6px" }}>
-                Select a group first to use MintSense
+              <p style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginTop: "8px", textAlign: "center" }}>
+                Select a group to activate AI parsing
               </p>
             )}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          {/* Group */}
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* Group Search/Select */}
           <div>
-            <label className="form-label">Group *</label>
+            <label className="form-label" style={{ color: "hsl(var(--muted-foreground))" }}>Group *</label>
             <select
               className="input-field"
               value={form.groupId}
               onChange={(e) => setForm({ ...form, groupId: e.target.value })}
               required
               disabled={!!editExpenseId}
+              style={{ height: "42px" }}
             >
-              <option value="">Select group...</option>
+              <option value="">Select a group</option>
               {groups.map((g) => (
                 <option key={g.id} value={g.id}>{g.name}</option>
               ))}
             </select>
           </div>
 
-          {/* Amount + Description */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2.5fr", gap: "12px" }}>
             <div>
-              <label className="form-label">Amount (₹) *</label>
+              <label className="form-label" style={{ color: "hsl(var(--muted-foreground))" }}>Amount (₹) *</label>
               <input
                 type="number"
                 className="input-field"
@@ -355,93 +356,97 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
                 min="0.01"
                 step="0.01"
                 required
+                style={{ height: "42px" }}
               />
             </div>
             <div>
-              <label className="form-label">Description *</label>
+              <label className="form-label" style={{ color: "hsl(var(--muted-foreground))" }}>Description *</label>
               <input
                 type="text"
                 className="input-field"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="What's this expense for?"
+                placeholder="Lunch, Groceries, Trip..."
                 required
+                style={{ height: "42px" }}
               />
             </div>
           </div>
 
-          {/* Date + Paid by */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             <div>
-              <label className="form-label">Date *</label>
+              <label className="form-label" style={{ color: "hsl(var(--muted-foreground))" }}>Date *</label>
               <input
                 type="date"
                 className="input-field"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
                 required
+                style={{ height: "42px" }}
               />
             </div>
             <div>
-              <label className="form-label">Paid by *</label>
+              <label className="form-label" style={{ color: "hsl(var(--muted-foreground))" }}>Paid by *</label>
               <select
                 className="input-field"
                 value={form.paidByUserId}
                 onChange={(e) => setForm({ ...form, paidByUserId: e.target.value })}
                 required
+                style={{ height: "42px" }}
               >
                 {members.map((m) => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
+                  <option key={m.id} value={m.id}>{m.id === currentUserId ? "You" : m.name}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Participants */}
+          {/* Participants - Replaced with better pill design */}
           {members.length > 0 && (
             <div>
-              <label className="form-label">Split between</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {members.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => toggleParticipant(m.id)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "5px 12px 5px 6px",
-                      borderRadius: "20px",
-                      border: selectedParticipants.includes(m.id)
-                        ? "1px solid rgba(74, 222, 128, 0.4)"
-                        : "1px solid var(--border)",
-                      background: selectedParticipants.includes(m.id)
-                        ? "rgba(74, 222, 128, 0.08)"
-                        : "rgba(255,255,255,0.03)",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    <Avatar name={m.name} color={m.avatar_color} size="sm" />
-                    <span style={{ fontSize: "13px", color: "var(--text-primary)" }}>{m.name}</span>
-                  </button>
-                ))}
+              <label className="form-label" style={{ color: "hsl(var(--muted-foreground))", marginBottom: "10px" }}>Splitting between</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                {members.map((m) => {
+                  const isSelected = selectedParticipants.includes(m.id);
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => toggleParticipant(m.id)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "6px 12px 6px 6px",
+                        borderRadius: "12px",
+                        border: "1px solid",
+                        borderColor: isSelected ? "hsl(var(--primary) / 0.4)" : "hsl(var(--border))",
+                        background: isSelected ? "hsl(var(--primary) / 0.1)" : "hsl(var(--secondary) / 0.4)",
+                        cursor: "pointer",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        color: isSelected ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
+                      }}
+                    >
+                      <Avatar name={m.name} color={m.avatar_color} size="sm" />
+                      <span style={{ fontSize: "13px", fontWeight: isSelected ? "600" : "400" }}>{m.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Split Mode */}
+          {/* Split Mode Tabs */}
           <div>
-            <label className="form-label">Split mode</label>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <label className="form-label" style={{ color: "hsl(var(--muted-foreground))", marginBottom: "10px" }}>Split Mode</label>
+            <div style={{ display: "flex", gap: "6px", background: "hsl(var(--secondary) / 0.5)", padding: "4px", borderRadius: "12px", border: "1px solid hsl(var(--border))" }}>
               {(["equal", "custom", "percentage"] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   className={`tab-button ${form.splitMode === mode ? "active" : ""}`}
                   onClick={() => setForm({ ...form, splitMode: mode })}
-                  style={{ flex: 1, textTransform: "capitalize" }}
+                  style={{ flex: 1, textTransform: "capitalize", fontSize: "13px", padding: "8px" }}
                 >
                   {mode}
                 </button>
@@ -449,74 +454,47 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
             </div>
           </div>
 
-          {/* Custom splits */}
-          {form.splitMode === "custom" && selectedParticipants.length > 0 && (
-            <div>
-              <label className="form-label">
-                Custom amounts
-                <span style={{
-                  marginLeft: "8px",
-                  color: Math.abs(customTotal - parseFloat(form.amount || "0")) < 0.5 ? "#4ade80" : "#f87171",
-                  fontSize: "12px"
-                }}>
-                  ₹{customTotal.toFixed(2)} / ₹{parseFloat(form.amount || "0").toFixed(2)}
+          {/* Table for detailed splits if not equal */}
+          {form.splitMode !== "equal" && selectedParticipants.length > 0 && (
+            <div className="glass-card" style={{ padding: "16px", background: "hsl(var(--secondary) / 0.2)", borderStyle: "dashed" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "hsl(var(--foreground))" }}>
+                   {form.splitMode === "custom" ? "Custom Amounts" : "Percentages"}
                 </span>
-              </label>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {members.filter((m) => selectedParticipants.includes(m.id)).map((m) => (
-                  <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <Avatar name={m.name} color={m.avatar_color} size="sm" />
-                    <span style={{ flex: 1, fontSize: "13px" }}>{m.name}</span>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px" }}>₹</span>
-                      <input
-                        type="number"
-                        className="input-field"
-                        value={customSplits[m.id] || ""}
-                        onChange={(e) => setCustomSplits({ ...customSplits, [m.id]: e.target.value })}
-                        placeholder="0.00"
-                        min="0"
-                        step="0.01"
-                        style={{ width: "120px", paddingLeft: "22px" }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                <span style={{
+                  fontSize: "12px",
+                  fontWeight: "700",
+                   color: (form.splitMode === "custom" ? (Math.abs(customTotal - (parseFloat(form.amount) || 0)) < 0.5) : (Math.abs(percentTotal - 100) < 0.5)) ? "hsl(142 70% 60%)" : "hsl(0 72% 60%)"
+                }}>
+                  {form.splitMode === "custom" 
+                    ? `₹${customTotal.toFixed(2)} / ₹${(parseFloat(form.amount) || 0).toFixed(2)}`
+                    : `${percentTotal.toFixed(1)}% / 100%`}
+                </span>
               </div>
-            </div>
-          )}
-
-          {/* Percentage splits */}
-          {form.splitMode === "percentage" && selectedParticipants.length > 0 && (
-            <div>
-              <label className="form-label">
-                Percentages
-                <span style={{
-                  marginLeft: "8px",
-                  color: Math.abs(percentTotal - 100) < 0.5 ? "#4ade80" : "#f87171",
-                  fontSize: "12px"
-                }}>
-                  {percentTotal.toFixed(1)}% / 100%
-                </span>
-              </label>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {members.filter((m) => selectedParticipants.includes(m.id)).map((m) => (
-                  <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <Avatar name={m.name} color={m.avatar_color} size="sm" />
-                    <span style={{ flex: 1, fontSize: "13px" }}>{m.name}</span>
-                    <div style={{ position: "relative" }}>
+                    <span style={{ flex: 1, fontSize: "13px", color: "hsl(var(--foreground))" }}>{m.name}</span>
+                    <div style={{ position: "relative", width: "120px" }}>
+                      {form.splitMode === "custom" && <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "hsl(var(--muted-foreground))", fontSize: "13px" }}>₹</span>}
                       <input
                         type="number"
                         className="input-field"
-                        value={percentSplits[m.id] || ""}
-                        onChange={(e) => setPercentSplits({ ...percentSplits, [m.id]: e.target.value })}
+                        value={form.splitMode === "custom" ? (customSplits[m.id] || "") : (percentSplits[m.id] || "")}
+                        onChange={(e) => {
+                          if (form.splitMode === "custom") {
+                             setCustomSplits({ ...customSplits, [m.id]: e.target.value });
+                          } else {
+                             setPercentSplits({ ...percentSplits, [m.id]: e.target.value });
+                          }
+                        }}
                         placeholder="0"
                         min="0"
-                        max="100"
-                        step="0.1"
-                        style={{ width: "100px", paddingRight: "24px" }}
+                        step={form.splitMode === "custom" ? "0.01" : "0.1"}
+                        style={{ paddingLeft: form.splitMode === "custom" ? "22px" : "12px", height: "36px", fontSize: "13px" }}
                       />
-                      <span style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "13px" }}>%</span>
+                      {form.splitMode === "percentage" && <span style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", color: "hsl(var(--muted-foreground))", fontSize: "13px" }}>%</span>}
                     </div>
                   </div>
                 ))}
@@ -525,12 +503,12 @@ export function ExpenseForm({ onClose, onSaved, currentUserId, defaultGroupId, e
           )}
 
           {/* Actions */}
-          <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
-            <button type="button" onClick={onClose} className="btn-secondary" style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: "12px", marginTop: "10px" }}>
+            <button type="button" onClick={onClose} className="btn-secondary" style={{ flex: 1, height: "46px" }}>
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn-primary" style={{ flex: 2 }}>
-              {loading ? "Saving..." : editExpenseId ? "Update Expense" : "Add Expense"}
+            <button type="submit" disabled={loading} className="btn-primary" style={{ flex: 2, height: "46px" }}>
+              {loading ? <Loader size={18} className="spinner" /> : (editExpenseId ? "Update Expense" : "Add Expense")}
             </button>
           </div>
         </form>

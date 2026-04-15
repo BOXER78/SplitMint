@@ -94,20 +94,21 @@ export default function GroupSettingsPage() {
     <div style={{ padding: "28px", maxWidth: "600px" }}>
       <button
         onClick={() => router.push(`/groups/${groupId}`)}
-        style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px" }}
+        className="animate-fade-in"
+        style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", color: "hsl(var(--muted-foreground))", fontSize: "13px", marginBottom: "20px" }}
       >
         <ArrowLeft size={14} /> Back to {group?.name}
       </button>
 
-      <h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px" }}>Group Settings</h1>
-      <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "28px" }}>
+      <h1 className="animate-fade-in" style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px", color: "hsl(var(--foreground))" }}>Group Settings</h1>
+      <p className="animate-fade-in" style={{ color: "hsl(var(--muted-foreground))", fontSize: "14px", marginBottom: "28px" }}>
         Manage your group details and members
       </p>
 
-      <div className="glass-card" style={{ padding: "24px", marginBottom: "16px" }}>
-        <h2 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "16px" }}>Group Details</h2>
+      <div className="glass-card animate-slide-up" style={{ padding: "24px", marginBottom: "16px", animationDelay: "0.1s" }}>
+        <h2 style={{ fontSize: "16px", fontWeight: "600", marginBottom: "16px", color: "hsl(var(--foreground))" }}>Group Details</h2>
         <div style={{ marginBottom: "20px" }}>
-          <label className="form-label">Group name *</label>
+          <label className="form-label" style={{ color: "hsl(var(--muted-foreground))" }}>Group name *</label>
           <input
             type="text"
             className="input-field"
@@ -118,17 +119,17 @@ export default function GroupSettingsPage() {
         </div>
 
         <div>
-          <label className="form-label" style={{ marginBottom: "10px", display: "block" }}>
+          <label className="form-label" style={{ marginBottom: "10px", display: "block", color: "hsl(var(--muted-foreground))" }}>
             Members (max 3 others + you)
           </label>
 
           {/* Current user (non-removable) */}
           {user && (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "10px", background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.15)", marginBottom: "10px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "10px", background: "hsl(142 70% 60% / 0.08)", border: "1px solid hsl(142 70% 60% / 0.15)", marginBottom: "10px" }}>
               <Avatar name={user.name} color={user.avatar_color} size="sm" />
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "13px", fontWeight: "500" }}>{user.name}</p>
-                <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>{user.email}</p>
+                <p style={{ fontSize: "13px", fontWeight: "500", color: "hsl(var(--foreground))" }}>{user.name}</p>
+                <p style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))" }}>{user.email}</p>
               </div>
               <span className="badge-green" style={{ fontSize: "10px" }}>Owner</span>
             </div>
@@ -144,7 +145,7 @@ export default function GroupSettingsPage() {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: "10px", marginBottom: "24px" }}>
+      <div className="animate-slide-up" style={{ display: "flex", gap: "10px", marginBottom: "24px", animationDelay: "0.2s" }}>
         <button onClick={() => router.push(`/groups/${groupId}`)} className="btn-secondary" style={{ flex: 1 }}>
           Cancel
         </button>
@@ -155,9 +156,9 @@ export default function GroupSettingsPage() {
       </div>
 
       {/* Danger Zone */}
-      <div style={{ padding: "20px", borderRadius: "14px", border: "1px solid rgba(248,113,113,0.2)", background: "rgba(248,113,113,0.04)" }}>
-        <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#f87171", marginBottom: "8px" }}>Danger Zone</h3>
-        <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "14px" }}>
+      <div className="animate-slide-up" style={{ padding: "20px", borderRadius: "14px", border: "1px solid hsl(0 72% 60% / 0.2)", background: "hsl(0 72% 60% / 0.04)", animationDelay: "0.3s" }}>
+        <h3 style={{ fontSize: "14px", fontWeight: "600", color: "hsl(0 72% 60%)", marginBottom: "8px" }}>Danger Zone</h3>
+        <p style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))", marginBottom: "14px" }}>
           Deleting this group will permanently remove all expenses, splits, and balances. This cannot be undone.
         </p>
         <button

@@ -84,6 +84,12 @@ export default function GroupDashboardPage() {
         fetch(`/api/groups/${groupId}/balances`),
       ]);
 
+      if (!groupRes.ok || !expensesRes.ok || !balancesRes.ok) {
+        const errorRes = !groupRes.ok ? groupRes : !expensesRes.ok ? expensesRes : balancesRes;
+        const errData = await errorRes.json().catch(() => ({ error: "Unknown server error" }));
+        throw new Error(errData.error || `Error: ${errorRes.status} ${errorRes.statusText}`);
+      }
+
       const groupData = await groupRes.json();
       const expData = await expensesRes.json();
       const balData = await balancesRes.json();
@@ -95,8 +101,9 @@ export default function GroupDashboardPage() {
       setNetBalances(balData.netBalances || []);
       setMemberContributions(balData.memberContributions || []);
       setTotalSpent(balData.totalSpent || 0);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Load Error:", err);
+      toast(err.message || "Failed to load dashboard", "error");
     } finally {
       setLoading(false);
     }
@@ -131,33 +138,33 @@ export default function GroupDashboardPage() {
   const myNetBalance = netBalances.find((b) => b.userId === user?.id);
 
   if (loading) return <Loading text="Loading group..." />;
-  if (!group) return <div style={{ padding: "28px", color: "var(--text-muted)" }}>Group not found</div>;
+  if (!group) return <div style={{ padding: "28px", color: "hsl(var(--muted-foreground))" }}>Group not found</div>;
 
   const chartData = memberContributions
     .filter((m) => m.paid > 0)
     .map((m) => ({ name: m.name, value: Math.round(m.paid) }));
 
   return (
-    <div style={{ padding: "28px", maxWidth: "1100px" }}>
+    <div style={{ padding: "28px", maxWidth: "1100px", margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ marginBottom: "24px" }}>
+      <div className="animate-fade-in" style={{ marginBottom: "24px" }}>
         <button
           onClick={() => router.push("/groups")}
-          style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "13px", marginBottom: "16px" }}
+          style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", color: "hsl(var(--muted-foreground))", fontSize: "13px", marginBottom: "16px" }}
         >
           <ArrowLeft size={14} /> All Groups
         </button>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "6px" }}>{group.name}</h1>
+            <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "6px", color: "hsl(var(--foreground))" }}>{group.name}</h1>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div style={{ display: "flex", gap: "4px" }}>
                 {members.slice(0, 4).map((m) => (
                   <Avatar key={m.id} name={m.name} color={m.avatar_color} size="sm" />
                 ))}
               </div>
-              <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+              <span style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))" }}>
                 {members.length} member{members.length !== 1 ? "s" : ""}
               </span>
             </div>
@@ -184,14 +191,14 @@ export default function GroupDashboardPage() {
       </div>
 
       {/* Stats Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "24px" }}>
+      <div className="animate-slide-up" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "24px", animationDelay: "0.1s" }}>
         <div className="stat-card">
-          <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px", fontWeight: "600" }}>TOTAL SPENT</p>
-          <p style={{ fontSize: "24px", fontWeight: "700" }}>₹{totalSpent.toLocaleString("en-IN")}</p>
+          <p style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>TOTAL SPENT</p>
+          <p style={{ fontSize: "24px", fontWeight: "700", color: "hsl(var(--foreground))" }}>₹{totalSpent.toLocaleString("en-IN")}</p>
         </div>
-        <div className="stat-card" style={{ borderColor: myNetBalance && myNetBalance.netAmount > 0 ? "rgba(74,222,128,0.2)" : myNetBalance && myNetBalance.netAmount < 0 ? "rgba(248,113,113,0.2)" : "var(--border)" }}>
-          <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px", fontWeight: "600" }}>YOUR BALANCE</p>
-          <p style={{ fontSize: "24px", fontWeight: "700", color: myNetBalance && myNetBalance.netAmount > 0 ? "#4ade80" : myNetBalance && myNetBalance.netAmount < 0 ? "#f87171" : "var(--text-primary)" }}>
+        <div className="stat-card" style={{ borderColor: myNetBalance && myNetBalance.netAmount > 0 ? "hsl(142 70% 60% / 0.3)" : myNetBalance && myNetBalance.netAmount < 0 ? "hsl(0 72% 60% / 0.3)" : "hsl(var(--border))" }}>
+          <p style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>YOUR BALANCE</p>
+          <p style={{ fontSize: "24px", fontWeight: "700", color: myNetBalance && myNetBalance.netAmount > 0 ? "hsl(142 70% 60%)" : myNetBalance && myNetBalance.netAmount < 0 ? "hsl(0 72% 60%)" : "hsl(var(--foreground))" }}>
             {myNetBalance
               ? myNetBalance.netAmount > 0
                 ? `+₹${myNetBalance.netAmount}`
@@ -202,16 +209,16 @@ export default function GroupDashboardPage() {
           </p>
         </div>
         <div className="stat-card">
-          <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginBottom: "6px", fontWeight: "600" }}>EXPENSES</p>
-          <p style={{ fontSize: "24px", fontWeight: "700" }}>{expenses.length}</p>
+          <p style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em" }}>EXPENSES</p>
+          <p style={{ fontSize: "24px", fontWeight: "700", color: "hsl(var(--foreground))" }}>{expenses.length}</p>
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "20px" }}>
         {/* Main content */}
-        <div>
+        <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
           {/* Tabs */}
-          <div style={{ display: "flex", gap: "4px", marginBottom: "16px", background: "rgba(255,255,255,0.03)", padding: "4px", borderRadius: "10px", border: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", gap: "4px", marginBottom: "16px", background: "hsl(var(--secondary) / 0.5)", padding: "4px", borderRadius: "10px", border: "1px solid hsl(var(--border))" }}>
             {(["expenses", "balances", "settlements"] as const).map((tab) => (
               <button
                 key={tab}
@@ -246,19 +253,19 @@ export default function GroupDashboardPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                           <div>
-                            <p style={{ fontWeight: "600", fontSize: "14px", marginBottom: "2px" }}>{exp.description}</p>
-                            <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                              {exp.paid_by_name} paid · {new Date(exp.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · {exp.split_mode} split
+                            <p style={{ fontWeight: "600", fontSize: "14px", marginBottom: "2px", color: "hsl(var(--foreground))" }}>{exp.description}</p>
+                            <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>
+                              <span style={{ color: "hsl(var(--foreground))" }}>{exp.paid_by_name}</span> paid · {new Date(exp.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · {exp.split_mode} split
                             </p>
                           </div>
                           <div style={{ textAlign: "right" }}>
-                            <p style={{ fontWeight: "700", fontSize: "16px" }}>₹{exp.amount.toLocaleString("en-IN")}</p>
+                            <p style={{ fontWeight: "700", fontSize: "16px", color: "hsl(var(--foreground))" }}>₹{exp.amount.toLocaleString("en-IN")}</p>
                           </div>
                         </div>
                         {/* Split details */}
                         <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap" }}>
                           {exp.splits.map((s) => (
-                            <span key={s.user_id} style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", color: "var(--text-muted)" }}>
+                            <span key={s.user_id} style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "10px", background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))" }}>
                               {s.user_name}: ₹{s.amount}
                             </span>
                           ))}
@@ -287,15 +294,15 @@ export default function GroupDashboardPage() {
               ) : (
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "var(--text-muted)", fontWeight: "600" }}>MEMBER</th>
-                      <th style={{ padding: "12px 16px", textAlign: "right", fontSize: "12px", color: "var(--text-muted)", fontWeight: "600" }}>NET BALANCE</th>
-                      <th style={{ padding: "12px 16px", textAlign: "right", fontSize: "12px", color: "var(--text-muted)", fontWeight: "600" }}>STATUS</th>
+                    <tr style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "hsl(var(--muted-foreground))", fontWeight: "600" }}>MEMBER</th>
+                      <th style={{ padding: "12px 16px", textAlign: "right", fontSize: "12px", color: "hsl(var(--muted-foreground))", fontWeight: "600" }}>NET BALANCE</th>
+                      <th style={{ padding: "12px 16px", textAlign: "right", fontSize: "12px", color: "hsl(var(--muted-foreground))", fontWeight: "600" }}>STATUS</th>
                     </tr>
                   </thead>
                   <tbody>
                     {netBalances.map((nb, i) => (
-                      <tr key={nb.userId} style={{ borderBottom: i < netBalances.length - 1 ? "1px solid var(--border)" : "none" }}>
+                      <tr key={nb.userId} style={{ borderBottom: i < netBalances.length - 1 ? "1px solid hsl(var(--border))" : "none" }}>
                         <td style={{ padding: "12px 16px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                             <Avatar
@@ -303,14 +310,14 @@ export default function GroupDashboardPage() {
                               color={members.find((m) => m.id === nb.userId)?.avatar_color || "#6366f1"}
                               size="sm"
                             />
-                            <span style={{ fontSize: "14px", fontWeight: nb.userId === user?.id ? "600" : "400" }}>
+                            <span style={{ fontSize: "14px", fontWeight: nb.userId === user?.id ? "600" : "400", color: "hsl(var(--foreground))" }}>
                               {nb.userName}
-                              {nb.userId === user?.id && <span style={{ fontSize: "11px", color: "var(--text-muted)", marginLeft: "4px" }}>(you)</span>}
+                              {nb.userId === user?.id && <span style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginLeft: "4px" }}>(you)</span>}
                             </span>
                           </div>
                         </td>
                         <td style={{ padding: "12px 16px", textAlign: "right" }}>
-                          <span style={{ fontWeight: "700", fontSize: "15px", color: nb.netAmount > 0 ? "#4ade80" : nb.netAmount < 0 ? "#f87171" : "var(--text-muted)" }}>
+                          <span style={{ fontWeight: "700", fontSize: "15px", color: nb.netAmount > 0 ? "hsl(142 70% 60%)" : nb.netAmount < 0 ? "hsl(0 72% 60%)" : "hsl(var(--muted-foreground))" }}>
                             {nb.netAmount > 0 ? `+₹${nb.netAmount}` : nb.netAmount < 0 ? `-₹${Math.abs(nb.netAmount)}` : "₹0"}
                           </span>
                         </td>
@@ -337,9 +344,9 @@ export default function GroupDashboardPage() {
               {settlements.length === 0 ? (
                 <div className="glass-card">
                   <div className="empty-state">
-                    <CheckCircle size={32} color="#4ade80" />
-                    <p style={{ color: "var(--text-primary)", fontWeight: "600" }}>All settled up!</p>
-                    <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>No pending payments in this group</p>
+                    <CheckCircle size={32} color="hsl(142 70% 60%)" />
+                    <p style={{ color: "hsl(var(--foreground))", fontWeight: "600" }}>All settled up!</p>
+                    <p style={{ color: "hsl(var(--muted-foreground))", fontSize: "13px" }}>No pending payments in this group</p>
                   </div>
                 </div>
               ) : (
@@ -347,16 +354,16 @@ export default function GroupDashboardPage() {
                   <div key={i} className="glass-card" style={{ padding: "14px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <Avatar name={s.fromUserName} color={members.find((m) => m.id === s.fromUserId)?.avatar_color || "#6366f1"} size="sm" />
-                      <span style={{ fontSize: "14px", fontWeight: s.fromUserId === user?.id ? "600" : "400" }}>
+                      <span style={{ fontSize: "14px", color: "hsl(var(--foreground))", fontWeight: s.fromUserId === user?.id ? "600" : "400" }}>
                         {s.fromUserId === user?.id ? "You" : s.fromUserName}
                       </span>
-                      <ArrowRight size={14} color="var(--text-muted)" />
+                      <ArrowRight size={14} color="hsl(var(--muted-foreground))" />
                       <Avatar name={s.toUserName} color={members.find((m) => m.id === s.toUserId)?.avatar_color || "#6366f1"} size="sm" />
-                      <span style={{ fontSize: "14px", fontWeight: s.toUserId === user?.id ? "600" : "400" }}>
+                      <span style={{ fontSize: "14px", color: "hsl(var(--foreground))", fontWeight: s.toUserId === user?.id ? "600" : "400" }}>
                         {s.toUserId === user?.id ? "You" : s.toUserName}
                       </span>
                       <div style={{ marginLeft: "auto" }}>
-                        <span style={{ fontWeight: "700", fontSize: "16px", color: s.fromUserId === user?.id ? "#f87171" : "#4ade80" }}>
+                        <span style={{ fontWeight: "700", fontSize: "16px", color: s.fromUserId === user?.id ? "hsl(0 72% 60%)" : "hsl(142 70% 60%)" }}>
                           ₹{s.amount.toLocaleString("en-IN")}
                         </span>
                       </div>
@@ -369,60 +376,60 @@ export default function GroupDashboardPage() {
         </div>
 
         {/* Sidebar */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className="animate-slide-up" style={{ display: "flex", flexDirection: "column", gap: "16px", animationDelay: "0.3s" }}>
           {/* Contribution chart */}
           <div className="glass-card" style={{ padding: "16px" }}>
-            <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px" }}>Contributions</h3>
+            <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "hsl(var(--foreground))" }}>Contributions</h3>
             {chartData.length > 0 ? (
               <>
                 <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
                     <Pie data={chartData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" stroke="none">
                       {chartData.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                         <Cell key={`cell-${i}`} fill={`hsl(168 80% ${40 + i * 15}%)`} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(v: any) => `₹${v}`} contentStyle={{ background: "#1a2035", border: "1px solid var(--border)", borderRadius: "8px", fontSize: "12px" }} />
+                    <Tooltip formatter={(v: any) => `₹${v}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px", color: "hsl(var(--foreground))" }} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {memberContributions.map((m, i) => (
                     <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <div style={{ width: "8px", height: "8px", borderRadius: "2px", background: COLORS[i % COLORS.length] }} />
-                      <Avatar name={m.name} color={m.avatar_color} size="sm" />
-                      <span style={{ flex: 1, fontSize: "12px" }}>{m.name}</span>
-                      <span style={{ fontSize: "13px", fontWeight: "600" }}>₹{Math.round(m.paid).toLocaleString("en-IN")}</span>
+                      <div style={{ width: "8px", height: "8px", borderRadius: "2px", background: `hsl(168 80% ${40 + i * 15}%)` }} />
+                       <Avatar name={m.name} color={m.avatar_color} size="sm" />
+                      <span style={{ flex: 1, fontSize: "12px", color: "hsl(var(--foreground))" }}>{m.name}</span>
+                      <span style={{ fontSize: "13px", fontWeight: "600", color: "hsl(var(--foreground))" }}>₹{Math.round(m.paid).toLocaleString("en-IN")}</span>
                     </div>
                   ))}
                 </div>
               </>
             ) : (
-              <p style={{ fontSize: "13px", color: "var(--text-muted)", textAlign: "center", padding: "16px 0" }}>
+              <p style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))", textAlign: "center", padding: "16px 0" }}>
                 No expenses yet
               </p>
             )}
           </div>
 
           {/* MintSense */}
-          <div style={{ padding: "16px", borderRadius: "16px", background: "linear-gradient(135deg, rgba(129,140,248,0.08), rgba(74,222,128,0.05))", border: "1px solid rgba(129,140,248,0.2)" }}>
+          <div style={{ padding: "16px", borderRadius: "16px", background: "hsl(168 80% 55% / 0.05)", border: "1px solid hsl(168 80% 55% / 0.2)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <Sparkles size={14} color="#818cf8" />
-                <span style={{ fontSize: "13px", fontWeight: "600", color: "#818cf8" }}>MintSense</span>
+                <Sparkles size={14} style={{ color: "hsl(168 80% 55%)" }} />
+                <span style={{ fontSize: "13px", fontWeight: "600", color: "hsl(168 80% 55%)" }}>MintSense AI</span>
               </div>
               <button
                 onClick={handleMintSense}
                 disabled={summaryLoading}
-                style={{ background: "rgba(129,140,248,0.15)", border: "1px solid rgba(129,140,248,0.3)", color: "#818cf8", padding: "4px 8px", borderRadius: "6px", cursor: "pointer", fontSize: "11px" }}
+                style={{ background: "hsl(168 80% 55% / 0.1)", border: "1px solid hsl(168 80% 55% / 0.2)", color: "hsl(168 80% 55%)", padding: "4px 8px", borderRadius: "6px", cursor: "pointer", fontSize: "11px" }}
               >
                 <RefreshCw size={10} style={{ animation: summaryLoading ? "spin 0.7s linear infinite" : "none", display: "inline", marginRight: "4px" }} />
                 {summaryLoading ? "..." : "Summarize"}
               </button>
             </div>
             {mintSummary ? (
-              <p style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.6" }}>{mintSummary}</p>
+              <p className="animate-fade-in" style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", lineHeight: "1.6" }}>{mintSummary}</p>
             ) : (
-              <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>
                 Generate an AI summary of this group's expenses.
               </p>
             )}
@@ -430,14 +437,14 @@ export default function GroupDashboardPage() {
 
           {/* Members list */}
           <div className="glass-card" style={{ padding: "16px" }}>
-            <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px" }}>Members</h3>
+            <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "hsl(var(--foreground))" }}>Members</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {members.map((m) => (
                 <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <Avatar name={m.name} color={m.avatar_color} size="sm" />
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: "13px", fontWeight: "500" }}>{m.name}</p>
-                    <p style={{ fontSize: "11px", color: "var(--text-muted)" }}>{m.email}</p>
+                    <p style={{ fontSize: "13px", fontWeight: "500", color: "hsl(var(--foreground))" }}>{m.name}</p>
+                    <p style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))" }}>{m.email}</p>
                   </div>
                   {m.id === user?.id && <span className="badge-gray" style={{ fontSize: "10px" }}>you</span>}
                 </div>

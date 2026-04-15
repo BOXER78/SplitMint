@@ -53,12 +53,12 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
   };
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-content">
+    <div className="modal-overlay animate-fade-in" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal-content animate-scale-in">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "20px", fontWeight: "700" }}>Create Group</h2>
-          <button onClick={onClose} className="btn-secondary" style={{ padding: "6px", borderRadius: "8px" }}>
-            <X size={16} />
+          <h2 style={{ fontSize: "20px", fontWeight: "700", color: "hsl(var(--foreground))" }}>Create Group</h2>
+          <button onClick={onClose} className="btn-secondary" style={{ padding: "6px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none" }}>
+            <X size={18} style={{ color: "hsl(var(--muted-foreground))" }} />
           </button>
         </div>
 
@@ -70,7 +70,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
               className="input-field"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Weekend trip, Office lunch..."
+              placeholder="e.g. Weekend Trip"
               required
               autoFocus
             />
@@ -82,7 +82,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
             </label>
             <div style={{ marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
               <Avatar name={user!.name} color={user!.avatar_color} size="sm" />
-              <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>{user!.name} (you)</span>
+              <span style={{ fontSize: "13px", color: "hsl(var(--muted-foreground))" }}>{user!.name} (you)</span>
             </div>
             <UserSearch
               selected={members}
@@ -143,28 +143,30 @@ export default function GroupsPage() {
 
   if (loading) return <Loading text="Loading groups..." />;
 
+  const avatarColors = ["hsl(168 80% 55%)", "hsl(217 91% 60%)", "hsl(38 92% 60%)", "hsl(330 80% 60%)"];
+
   return (
-    <div style={{ padding: "28px", maxWidth: "900px" }}>
+    <div style={{ padding: "28px", maxWidth: "900px", margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+      <div className="animate-fade-in" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
         <div>
-          <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "4px" }}>Groups</h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
+          <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "4px", color: "hsl(var(--foreground))" }}>Groups</h1>
+          <p style={{ color: "hsl(var(--muted-foreground))", fontSize: "14px" }}>
             Manage your expense groups
           </p>
         </div>
         <button onClick={() => setShowCreate(true)} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <Plus size={16} />
-          New Group
+          Create Group
         </button>
       </div>
 
       {groups.length === 0 ? (
-        <div className="glass-card" style={{ padding: "60px 20px" }}>
+        <div className="glass-card animate-slide-up" style={{ padding: "60px 20px" }}>
           <div className="empty-state">
             <div style={{ fontSize: "48px" }}>👥</div>
-            <h3 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text-primary)" }}>No groups yet</h3>
-            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: "600", color: "hsl(var(--foreground))" }}>No groups yet</h3>
+            <p style={{ color: "hsl(var(--muted-foreground))", fontSize: "14px" }}>
               Create a group to start splitting expenses with friends
             </p>
             <button onClick={() => setShowCreate(true)} className="btn-primary">
@@ -173,73 +175,112 @@ export default function GroupsPage() {
           </div>
         </div>
       ) : (
-        <div style={{ display: "grid", gap: "12px" }}>
-          {groups.map((group) => (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          {groups.map((group, i) => (
             <div
               key={group.id}
-              className="glass-card"
-              style={{ cursor: "pointer" }}
+              className="glass-card animate-slide-up group-card-hover"
+              style={{
+                cursor: "pointer",
+                padding: "20px",
+                position: "relative",
+                animationDelay: `${0.1 + i * 0.1}s`
+              }}
               onClick={() => router.push(`/groups/${group.id}`)}
+              onMouseEnter={(e) => {
+                const icon = e.currentTarget.querySelector('.chevron-icon') as HTMLElement;
+                if (icon) icon.style.color = 'hsl(var(--primary))';
+              }}
+              onMouseLeave={(e) => {
+                const icon = e.currentTarget.querySelector('.chevron-icon') as HTMLElement;
+                if (icon) icon.style.color = 'hsl(var(--muted-foreground))';
+              }}
             >
-              <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: "16px" }}>
-                {/* Group icon */}
-                <div
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "14px",
-                    background: "linear-gradient(135deg, rgba(74,222,128,0.15), rgba(129,140,248,0.15))",
-                    border: "1px solid rgba(74,222,128,0.2)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "20px",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Users size={20} color="#4ade80" />
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                    <h3 style={{ fontSize: "16px", fontWeight: "600" }}>{group.name}</h3>
-                    {group.created_by === user?.id && (
-                      <span className="badge-gray">Owner</span>
-                    )}
-                  </div>
-                  <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                    {group.member_count} member{group.member_count !== 1 ? "s" : ""} ·{" "}
-                    ₹{(group.total_spent || 0).toLocaleString("en-IN")} total spent
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <h3 style={{ fontSize: "16px", fontWeight: "600", color: "hsl(var(--foreground))" }}>{group.name}</h3>
                   {group.created_by === user?.id && (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/groups/${group.id}/settings`);
-                        }}
-                        className="btn-secondary"
-                        style={{ padding: "6px 10px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px" }}
-                      >
-                        <Settings size={13} />
-                        Settings
-                      </button>
-                      <button
-                        onClick={(e) => handleDelete(group.id, e)}
-                        className="btn-danger"
-                        style={{ padding: "6px 10px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px" }}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </>
+                    <span className="badge-gray" style={{ fontSize: "10px", padding: "2px 6px" }}>Owner</span>
                   )}
-                  <ChevronRight size={16} color="var(--text-muted)" />
                 </div>
+                <ChevronRight size={16} className="chevron-icon" style={{ color: "hsl(var(--muted-foreground))", transition: "color 0.2s" }} />
+              </div>
+              
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", fontSize: "14px", color: "hsl(var(--muted-foreground))" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Users size={14} /> {group.member_count} members
+                </span>
+                <span>₹{(group.total_spent || 0).toLocaleString("en-IN")} spent</span>
+              </div>
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "16px" }}>
+                <div style={{ display: "flex" }}>
+                  {[...Array(Math.min(group.member_count, 4))].map((_, j) => (
+                    <div
+                      key={j}
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        border: "2px solid hsl(var(--card))",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "10px",
+                        fontWeight: "600",
+                        background: avatarColors[j % 4],
+                        color: "#000",
+                        marginLeft: j > 0 ? "-8px" : "0",
+                      }}
+                    >
+                      {String.fromCharCode(65 + j)}
+                    </div>
+                  ))}
+                  {group.member_count > 4 && (
+                    <div
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        border: "2px solid hsl(var(--card))",
+                        background: "hsl(var(--secondary))",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "10px",
+                        fontWeight: "500",
+                        color: "hsl(var(--muted-foreground))",
+                        marginLeft: "-8px",
+                      }}
+                    >
+                      +{group.member_count - 4}
+                    </div>
+                  )}
+                </div>
+                
+                {group.created_by === user?.id && (
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/groups/${group.id}/settings`);
+                      }}
+                      className="btn-secondary"
+                      style={{ padding: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      title="Settings"
+                    >
+                      <Settings size={14} />
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(group.id, e)}
+                      className="btn-danger"
+                      style={{ padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(0 72% 60% / 0.1)", border: "1px solid hsl(0 72% 60% / 0.2)", color: "hsl(0 72% 60%)" }}
+                      title="Delete group"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

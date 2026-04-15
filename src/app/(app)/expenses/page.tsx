@@ -109,13 +109,13 @@ export default function ExpensesPage() {
   }
 
   return (
-    <div style={{ padding: "28px", maxWidth: "900px" }}>
+    <div style={{ padding: "28px", maxWidth: "900px", margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
+      <div className="animate-fade-in" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
         <div>
-          <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "4px" }}>Expenses</h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
-            All your expense transactions
+          <h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "4px", color: "hsl(var(--foreground))" }}>Expenses</h1>
+          <p style={{ color: "hsl(var(--muted-foreground))", fontSize: "14px" }}>
+            {expenses.length} expenses found
           </p>
         </div>
         <button onClick={() => { setEditId(undefined); setShowForm(true); }} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -125,92 +125,78 @@ export default function ExpensesPage() {
       </div>
 
       {/* Search + Filters */}
-      <div className="glass-card" style={{ padding: "16px", marginBottom: "20px" }}>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <div style={{ position: "relative", flex: 1 }}>
-            <Search size={14} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
-            <input
-              type="text"
-              className="input-field"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by description..."
-              style={{ paddingLeft: "34px" }}
-            />
-          </div>
-          <select
+      <div className="animate-slide-up" style={{ display: "flex", gap: "10px", marginBottom: "20px", animationDelay: "0.1s" }}>
+        <div style={{ position: "relative", flex: 1 }}>
+          <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "hsl(var(--muted-foreground))" }} />
+          <input
+            type="text"
             className="input-field"
-            value={filterGroup}
-            onChange={(e) => setFilterGroup(e.target.value)}
-            style={{ width: "180px" }}
-          >
-            <option value="">All groups</option>
-            {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-          </select>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`btn-secondary`}
-            style={{
-              display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap",
-              ...(showFilters ? { borderColor: "rgba(74,222,128,0.4)", color: "#4ade80" } : {})
-            }}
-          >
-            <Filter size={14} />
-            Filters
-            {hasFilters && (
-              <span style={{ background: "#4ade80", color: "#0a0d14", borderRadius: "10px", padding: "1px 6px", fontSize: "11px", fontWeight: "700" }}>
-                {[dateFrom, dateTo, amountMin, amountMax].filter(Boolean).length}
-              </span>
-            )}
-          </button>
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search expenses..."
+            style={{ paddingLeft: "36px" }}
+          />
+        </div>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="btn-secondary"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            whiteSpace: "nowrap",
+            ...(showFilters ? { borderColor: "hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" } : {}),
+          }}
+        >
+          <Filter size={14} />
+          Filters
+        </button>
+      </div>
+
+      {showFilters && (
+        <div className="glass-card animate-scale-in" style={{ padding: "16px", marginBottom: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "12px" }}>
+            <div>
+              <label style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginBottom: "4px", display: "block" }}>Group</label>
+              <select className="input-field" value={filterGroup} onChange={(e) => setFilterGroup(e.target.value)} style={{ fontSize: "13px" }}>
+                <option value="">All groups</option>
+                {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginBottom: "4px", display: "block" }}>From</label>
+              <input type="date" className="input-field" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ fontSize: "13px" }} />
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginBottom: "4px", display: "block" }}>To</label>
+              <input type="date" className="input-field" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ fontSize: "13px" }} />
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", color: "hsl(var(--muted-foreground))", marginBottom: "4px", display: "block" }}>Min Amount</label>
+              <input type="number" className="input-field" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} placeholder="₹0" style={{ fontSize: "13px" }} />
+            </div>
+          </div>
           {hasFilters && (
-            <button onClick={clearFilters} className="btn-danger" style={{ padding: "8px 10px" }}>
-              <X size={14} />
-            </button>
+            <div style={{ marginTop: "12px", display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={clearFilters} className="btn-danger" style={{ padding: "6px 12px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px" }}>
+                <X size={12} /> Clear all
+              </button>
+            </div>
           )}
         </div>
-
-        {showFilters && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "10px", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border)" }}>
-            <div>
-              <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <Calendar size={11} /> From date
-              </label>
-              <input type="date" className="input-field" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-            </div>
-            <div>
-              <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <Calendar size={11} /> To date
-              </label>
-              <input type="date" className="input-field" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-            </div>
-            <div>
-              <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <DollarSign size={11} /> Min amount
-              </label>
-              <input type="number" className="input-field" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} placeholder="₹0" />
-            </div>
-            <div>
-              <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <DollarSign size={11} /> Max amount
-              </label>
-              <input type="number" className="input-field" value={amountMax} onChange={(e) => setAmountMax(e.target.value)} placeholder="₹∞" />
-            </div>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Summary */}
       {expenses.length > 0 && (
-        <div style={{ display: "flex", gap: "16px", marginBottom: "20px" }}>
-          <div style={{ padding: "10px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", fontSize: "13px" }}>
-            <span style={{ color: "var(--text-muted)" }}>Showing </span>
-            <strong>{expenses.length}</strong>
-            <span style={{ color: "var(--text-muted)" }}> expense{expenses.length !== 1 ? "s" : ""}</span>
+        <div className="animate-slide-up" style={{ display: "flex", gap: "12px", marginBottom: "20px", animationDelay: "0.2s" }}>
+          <div style={{ padding: "8px 14px", borderRadius: "10px", background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: "13px" }}>
+            <span style={{ color: "hsl(var(--muted-foreground))" }}>Showing </span>
+            <strong style={{ color: "hsl(var(--foreground))" }}>{expenses.length}</strong>
+            <span style={{ color: "hsl(var(--muted-foreground))" }}> expense{expenses.length !== 1 ? "s" : ""}</span>
           </div>
-          <div style={{ padding: "10px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", fontSize: "13px" }}>
-            <span style={{ color: "var(--text-muted)" }}>Total </span>
-            <strong>₹{totalFiltered.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</strong>
+          <div style={{ padding: "8px 14px", borderRadius: "10px", background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: "13px" }}>
+            <span style={{ color: "hsl(var(--muted-foreground))" }}>Total </span>
+            <strong style={{ color: "hsl(var(--foreground))" }}>₹{totalFiltered.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</strong>
           </div>
         </div>
       )}
@@ -222,7 +208,7 @@ export default function ExpensesPage() {
         <div className="glass-card">
           <div className="empty-state">
             <div style={{ fontSize: "40px" }}>💸</div>
-            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: "600", color: "hsl(var(--foreground))" }}>
               {hasFilters ? "No expenses match your filters" : "No expenses yet"}
             </h3>
             {hasFilters ? (
@@ -236,12 +222,16 @@ export default function ExpensesPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           {Object.entries(grouped).map(([dateLabel, dateExpenses]) => (
             <div key={dateLabel}>
-              <div style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "8px", paddingLeft: "2px" }}>
+              <div style={{ fontSize: "12px", fontWeight: "600", color: "hsl(var(--muted-foreground))", marginBottom: "8px", paddingLeft: "2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 {dateLabel}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {dateExpenses.map((exp) => (
-                  <div key={exp.id} className="glass-card" style={{ padding: "14px 16px" }}>
+                {dateExpenses.map((exp, i) => (
+                  <div
+                    key={exp.id}
+                    className="glass-card animate-slide-up"
+                    style={{ padding: "14px 16px", animationDelay: `${0.1 + i * 0.04}s` }}
+                  >
                     <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
                       <div
                         style={{
@@ -255,29 +245,29 @@ export default function ExpensesPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
                           <div>
-                            <p style={{ fontWeight: "600", fontSize: "15px" }}>{exp.description}</p>
+                            <p style={{ fontWeight: "600", fontSize: "15px", color: "hsl(var(--foreground))" }}>{exp.description}</p>
                             <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "2px" }}>
-                              <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                              <span style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>
                                 {exp.group_name}
                               </span>
-                              <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>·</span>
+                              <span style={{ fontSize: "10px", color: "hsl(var(--muted-foreground))" }}>·</span>
                               <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                                 <div style={{ width: "14px", height: "14px", borderRadius: "50%", background: exp.paid_by_color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", color: "white", fontWeight: "bold" }}>
                                   {exp.paid_by_name[0]}
                                 </div>
-                                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>{exp.paid_by_name} paid</span>
+                                <span style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))" }}>{exp.paid_by_name} paid</span>
                               </div>
-                              <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>·</span>
+                              <span style={{ fontSize: "10px", color: "hsl(var(--muted-foreground))" }}>·</span>
                               <span className="badge-gray" style={{ fontSize: "10px", padding: "1px 6px" }}>{splitModeLabel[exp.split_mode]}</span>
                             </div>
                           </div>
-                          <p style={{ fontWeight: "700", fontSize: "17px", color: "var(--text-primary)" }}>
+                          <p style={{ fontWeight: "700", fontSize: "17px", color: "hsl(var(--foreground))" }}>
                             ₹{exp.amount.toLocaleString("en-IN")}
                           </p>
                         </div>
                         {/* My share */}
                         {exp.splits.find((s) => s.user_id === user?.id) && (
-                          <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "6px" }}>
+                          <p style={{ fontSize: "12px", color: "hsl(var(--muted-foreground))", marginTop: "6px" }}>
                             Your share: ₹{exp.splits.find((s) => s.user_id === user?.id)?.amount.toLocaleString("en-IN")}
                           </p>
                         )}

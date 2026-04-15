@@ -7,11 +7,6 @@ import { AuthProvider, useAuth } from "../../components/AuthProvider";
 import { ToastContainer, toast } from "../../components/Toast";
 import { Eye, EyeOff } from "lucide-react";
 
-const AVATAR_COLORS = [
-  "#6366f1", "#ec4899", "#f59e0b", "#10b981",
-  "#3b82f6", "#8b5cf6", "#ef4444", "#14b8a6",
-];
-
 function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -39,9 +34,9 @@ function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div>
-        <label className="form-label">Full name</label>
+        <label style={{ fontSize: "13px", fontWeight: "500", color: "hsl(var(--muted-foreground))", marginBottom: "6px", display: "block" }}>Full name</label>
         <input
           type="text"
           className="input-field"
@@ -53,7 +48,7 @@ function RegisterForm() {
         />
       </div>
       <div>
-        <label className="form-label">Email</label>
+        <label style={{ fontSize: "13px", fontWeight: "500", color: "hsl(var(--muted-foreground))", marginBottom: "6px", display: "block" }}>Email</label>
         <input
           type="email"
           className="input-field"
@@ -64,7 +59,7 @@ function RegisterForm() {
         />
       </div>
       <div>
-        <label className="form-label">Password</label>
+        <label style={{ fontSize: "13px", fontWeight: "500", color: "hsl(var(--muted-foreground))", marginBottom: "6px", display: "block" }}>Password</label>
         <div style={{ position: "relative" }}>
           <input
             type={showPass ? "text" : "password"}
@@ -74,21 +69,36 @@ function RegisterForm() {
             placeholder="Min. 6 characters"
             required
             minLength={6}
+            style={{ paddingRight: "40px" }}
           />
           <button
             type="button"
             onClick={() => setShowPass(!showPass)}
-            style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)" }}
+            style={{
+              position: "absolute",
+              right: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "hsl(var(--muted-foreground))",
+              display: "flex",
+              alignItems: "center",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = "hsl(var(--foreground))"}
+            onMouseLeave={(e) => e.currentTarget.style.color = "hsl(var(--muted-foreground))"}
           >
-            {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
         {password && password.length < 6 && (
-          <p style={{ fontSize: "11px", color: "#f87171", marginTop: "4px" }}>At least 6 characters required</p>
+          <p style={{ fontSize: "11px", color: "hsl(var(--destructive))", marginTop: "4px" }}>At least 6 characters required</p>
         )}
       </div>
-      <button type="submit" disabled={loading} className="btn-primary" style={{ width: "100%", marginTop: "4px", padding: "12px" }}>
-        {loading ? "Creating account..." : "Create Account"}
+      <button type="submit" disabled={loading} className="btn-primary" style={{ width: "100%", padding: "12px" }}>
+        {loading ? "Creating account..." : "Create account"}
       </button>
     </form>
   );
@@ -100,43 +110,107 @@ export default function RegisterPage() {
       <div
         style={{
           minHeight: "100vh",
-          background: "var(--bg-primary)",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: "20px",
           position: "relative",
           overflow: "hidden",
+          background: "hsl(var(--background))",
         }}
       >
-        <div style={{ position: "absolute", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(129,140,248,0.08) 0%, transparent 70%)", top: "-100px", right: "-100px", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(74,222,128,0.08) 0%, transparent 70%)", bottom: "-100px", left: "-100px", pointerEvents: "none" }} />
+        {/* Animated background blobs */}
+        <div
+          className="animate-float"
+          style={{
+            position: "absolute",
+            top: "-20%",
+            left: "-10%",
+            width: "500px",
+            height: "500px",
+            borderRadius: "50%",
+            opacity: 0.2,
+            background: "radial-gradient(circle, hsl(168 80% 55% / 0.3), transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          className="animate-float"
+          style={{
+            position: "absolute",
+            bottom: "-20%",
+            right: "-10%",
+            width: "600px",
+            height: "600px",
+            borderRadius: "50%",
+            opacity: 0.15,
+            background: "radial-gradient(circle, hsl(217 91% 60% / 0.3), transparent 70%)",
+            animationDelay: "3s",
+            pointerEvents: "none",
+          }}
+        />
 
-        <div style={{ width: "100%", maxWidth: "400px" }}>
-          <div style={{ textAlign: "center", marginBottom: "32px" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-              <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: "linear-gradient(135deg, #4ade80, #22d3ee)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", fontWeight: "800", color: "#0a0d14" }}>S</div>
-              <span style={{ fontSize: "26px", fontWeight: "800", letterSpacing: "-0.5px" }}>
-                Split<span className="gradient-text">Mint</span>
-              </span>
-            </div>
-            <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>Split expenses. Stay friends.</p>
-          </div>
+        {/* Floating particles */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="animate-float"
+            style={{
+              position: "absolute",
+              width: "4px",
+              height: "4px",
+              borderRadius: "50%",
+              background: "hsl(var(--primary) / 0.3)",
+              left: `${15 + i * 15}%`,
+              top: `${20 + (i % 3) * 25}%`,
+              animationDelay: `${i * 0.8}s`,
+              animationDuration: `${4 + i}s`,
+              pointerEvents: "none",
+            }}
+          />
+        ))}
 
-          <div className="glass-card" style={{ padding: "32px" }}>
-            <h1 style={{ fontSize: "22px", fontWeight: "700", marginBottom: "6px" }}>Create account</h1>
-            <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "24px" }}>
-              Join SplitMint and simplify group expenses
-            </p>
-            <RegisterForm />
-            <div className="divider" />
-            <p style={{ textAlign: "center", fontSize: "14px", color: "var(--text-secondary)" }}>
-              Already have an account?{" "}
-              <Link href="/login" style={{ color: "#4ade80", textDecoration: "none", fontWeight: "600" }}>
-                Sign in
-              </Link>
-            </p>
+        {/* Logo */}
+        <div className="animate-fade-in" style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+          <div
+            className="animate-pulse-glow"
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "14px",
+              background: "var(--gradient-primary)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "18px",
+              fontWeight: "800",
+              color: "hsl(var(--primary-foreground))",
+            }}
+          >
+            S
           </div>
+          <span style={{ fontSize: "26px", fontWeight: "800", letterSpacing: "-0.5px", color: "hsl(var(--foreground))" }}>
+            Split<span className="gradient-text">Mint</span>
+          </span>
+        </div>
+        <p className="animate-fade-in" style={{ color: "hsl(var(--muted-foreground))", fontSize: "14px", marginBottom: "32px", animationDelay: "0.1s" }}>
+          Split expenses. Stay friends.
+        </p>
+
+        {/* Card */}
+        <div className="glass-card animate-scale-in" style={{ width: "100%", maxWidth: "420px", padding: "32px", animationDelay: "0.2s" }}>
+          <h1 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "4px", color: "hsl(var(--foreground))" }}>Create account</h1>
+          <p style={{ color: "hsl(var(--muted-foreground))", fontSize: "14px", marginBottom: "24px" }}>
+            Join SplitMint and start splitting
+          </p>
+          <RegisterForm />
+          <div style={{ height: "1px", background: "hsl(var(--border))", margin: "20px 0" }} />
+          <p style={{ textAlign: "center", fontSize: "14px", color: "hsl(var(--muted-foreground))" }}>
+            Already have an account?{" "}
+            <Link href="/login" style={{ color: "hsl(var(--primary))", textDecoration: "none", fontWeight: "600" }}>
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
       <ToastContainer />

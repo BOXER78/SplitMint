@@ -14,7 +14,12 @@ export function Avatar({ name, color, size = "md", className = "" }: AvatarProps
   return (
     <div
       className={`avatar ${sizeClass} ${className}`}
-      style={{ backgroundColor: color }}
+      style={{ 
+        backgroundColor: color,
+        border: "2px solid hsl(var(--card))",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+        flexShrink: 0
+      }}
       title={name}
     >
       {initial}
