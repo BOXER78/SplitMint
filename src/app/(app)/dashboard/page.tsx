@@ -242,7 +242,7 @@ export default function DashboardPage() {
                   borderRadius: 8,
                   color: "#fff",
                 }}
-                formatter={(val: number) => [`₹${val.toLocaleString()}`, "Amount"]}
+                formatter={(val: any) => [`₹${Number(val).toLocaleString()}`, "Amount"]}
               />
               <Bar dataKey="amount" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} />
             </BarChart>
